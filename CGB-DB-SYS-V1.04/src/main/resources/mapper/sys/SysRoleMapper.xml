@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cy.pj.sys.dao.SysRoleDao">
+   
+   <!-- 更新角色自身信息 -->
+   <update id="updateObject">
+         update sys_roles
+         set name=#{name},
+             note=#{note},
+             modifiedUser=#{modifiedUser},
+             modifiedTime=now()
+         where id=#{id}
+   </update>
+   
+   <!-- resultMap一般用于自定义映射或一些关联查询中 -->
+   <resultMap type="com.cy.pj.sys.vo.SysRoleMenuVo" 
+              id="sysRoleMenuVo">
+        <!-- 假如基于id做关联查询，
+                           又希望将id值存储到值对象，
+                           可以对id进行专门映射 -->
+        <id property="id" column="id"/>
+        <!-- collection一般应用于one2many查询 -->
+        <collection property="menuIds"
+                    select="com.cy.pj.sys.dao.SysRoleMenuDao.findMenuIdsByRoleId"
+                    column="id">
+        </collection>
+   </resultMap>
+   <select id="findObjectById"
+           resultMap="sysRoleMenuVo">
+        select id,name,note
+        from sys_roles
+        where id=#{id}
+   </select>
+   <!-- 保存角色自身信息
+     1)useGeneratedKeys表示最后要获取insert操作的主键值
+     2)keyProperty表示要将获取的主键值赋值给参数对象的哪属性
+    -->
+   <insert id="insertObject"
+           parameterType="com.cy.pj.sys.entity.SysRole"
+           useGeneratedKeys="true"
+           keyProperty="id">
+      insert into sys_roles 
+      (id,name,note,createdTime,modifiedTime,
+      createdUser,modifiedUser) 
+      values
+      (null,#{name},#{note},now(),now(),
+      #{createdUser},#{modifiedUser})
+   </insert>
+   <!-- sql元素用于对其它元素中的共性进行提取，其它
+       元素用到此元素内容，可以使用include元素进行包含 -->
+   <sql id="queryWhereId">
+     from sys_roles
+     <where>
+            <if test="name!=null and name!=''">
+               name like concat("%",#{name},"%")
+            </if>
+     </where>
+   </sql>
+   <!-- 按条件查询记录总数 -->
+   <select id="getRowCount"
+           resultType="int">
+         select count(*)
+         <include refid="queryWhereId"/>
+   </select>
+   <!-- 查询当前页记录，resultType的值为一行记录要映射的结果类型 -->
+   <select id="findPageObjects"
+           resultType="com.cy.pj.sys.entity.SysRole">
+           select *
+           <include refid="queryWhereId"/>
+           order by createdTime desc
+           limit #{startIndex},#{pageSize}
+   </select>
+</mapper>

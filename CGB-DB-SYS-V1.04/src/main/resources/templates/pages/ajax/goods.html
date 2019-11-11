@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+   <h1>Goods Page</h1>
+   <div id="container"></div>
+   <script type="text/javascript" src="bower_components/modules/dbajax.js"></script>
+   <script type="text/javascript">
+      var url="goods/doFindGoods";
+      var params="pageCurrent=1";
+      $.getJSON(url, params,function(result){
+    	      console.log(result);
+      });
+   </script>
+</body>
+</html>
+
+
+
+
+
